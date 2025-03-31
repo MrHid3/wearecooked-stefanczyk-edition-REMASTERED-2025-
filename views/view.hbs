@@ -1,0 +1,32 @@
+<div class="left">
+    
+<form action="/createfolder" method="post">
+    <input type="text" name="name">
+    <input type="submit" value="create folder">
+</form>
+<button>new file</button>
+<form enctype="multipart/form-data" action="/upload" method="post">
+    <input type="file" multiple required name="upload">
+    <input type="submit">
+</form>
+</div>
+<div class="right">
+    <div class="folders">
+        <h3>FOLERY</h3>
+        {{#each folders}}
+            <div class="folder">
+                <div class="delete">x</div>
+                {{name}}
+            </div>
+        {{/each}}
+    </div>
+    <div class="files">
+        <h3>PLIKI</h3>
+        {{#each files}}
+            <div class="file">
+                <div class="delete">x</div>
+                {{name}}
+            </div>
+        {{/each}}
+    </div>
+</div>

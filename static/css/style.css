@@ -1,0 +1,12 @@
+body{
+    display: Flex;
+    flex-direction: row;
+}
+
+button{
+    width: 40px;
+    height: 15px;
+    padding: 5px;
+    line-height: 25px;
+    color: seagreen;
+}
