@@ -1,6 +1,7 @@
 body{
-    display: Flex;
+    display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 button{
@@ -9,4 +10,12 @@ button{
     padding: 5px;
     line-height: 25px;
     color: seagreen;
+}
+
+.left, .right{
+    width: 30%;
+}
+
+.folders, .files{
+    background-color: white;
 }

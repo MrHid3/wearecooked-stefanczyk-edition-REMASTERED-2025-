@@ -17,6 +17,12 @@ let current = "files"
 //     ]
 // }
 
+App.set('views', path.join(__dirname, 'views'));
+App.engine('hbs', hbs({ defaultLayout: 'main.hbs' }));
+App.set('view engine', 'hbs');
+App.use(express.json());
+App.use(express.urlencoded({ extended: false }));
+
 function getDirectories(pathname){
     let folders = [];
     fs.readdir(path.join(__dirname, pathname), (err, results)=> {
@@ -45,20 +51,18 @@ function getFiles(pathname){
     return files;
 }
 
-App.set('views', path.join(__dirname, 'views'));         
-App.use(express.json());
-App.engine('hbs', hbs({ defaultLayout: 'main.hbs' }));   
-App.set('view engine', 'hbs');                           
-
 App.get("/", (req, res) => {
     res.render("view.hbs", {"folders": getDirectories(current), "files": getFiles(current)});
 })
 
-App.post("/createfolder", (req, res) => {
-    console.log(req.body.name);
-    fs.mkdir(path.join(__dirname, current, req.body.name));
-    res.redirect("/");
+App.get("/createfolder", (req, res) => {
+    console.log(path.join(__dirname, current, req.params.call))
+    fs.mkdir(path.join(__dirname, current, req.params.call), { recursive: false }, (err) => {
+        console.log("skibidibi dab dab")
+    });
 })
+
+App.use(express.static('static'))
 
 App.listen(3000, () => {
     console.log("start serwera na porcie ", 3000)

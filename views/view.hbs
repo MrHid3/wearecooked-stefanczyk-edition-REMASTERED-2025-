@@ -1,14 +1,17 @@
 <div class="left">
-    
-<form action="/createfolder" method="post">
-    <input type="text" name="name">
-    <input type="submit" value="create folder">
-</form>
-<button>new file</button>
-<form enctype="multipart/form-data" action="/upload" method="post">
-    <input type="file" multiple required name="upload">
-    <input type="submit">
-</form>
+
+    <form action="/createfolder/" method="get">
+        <input type="text" name="call" required>
+        <input type="submit" value="create folder">
+    </form>
+    <form action="/createfile/" method="get">
+        <input type="text" name="call" required>
+        <input type="submit" value="create file">
+    </form>
+    <form enctype="multipart/form-data" action="/upload" method="post">
+        <input type="file" multiple required name="upload">
+        <input type="submit">
+    </form>
 </div>
 <div class="right">
     <div class="folders">
