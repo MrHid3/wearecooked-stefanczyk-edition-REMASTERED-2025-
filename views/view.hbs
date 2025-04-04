@@ -1,34 +1,34 @@
 <div class="left">
-
-    <form action="/createfolder/" method="get">
+    <form action="/createfolder" method="post">
         <input type="text" name="call" required>
         <input type="submit" value="create folder">
     </form>
-    <form action="/createfile/" method="get">
+    <form action="/createfile" method="post">
         <input type="text" name="call" required>
         <input type="submit" value="create file">
     </form>
-    <form enctype="multipart/form-data" action="/upload" method="post">
-        <input type="file" multiple required name="upload">
+    <form enctype="multipart/form-data" action="/uploadfile" method="post">
+        <input type="file" name="upload" multiple required >
         <input type="submit">
     </form>
 </div>
+
 <div class="right">
+    <h3>FOLERY</h3>
     <div class="folders">
-        <h3>FOLERY</h3>
         {{#each folders}}
             <div class="folder">
-                <div class="delete">x</div>
-                {{name}}
+                <span>[{{name}}]</span>
+                <div class="delete">&cross;</div>
             </div>
         {{/each}}
     </div>
+    <h3>PLIKI</h3>
     <div class="files">
-        <h3>PLIKI</h3>
         {{#each files}}
             <div class="file">
-                <div class="delete">x</div>
-                {{name}}
+                <span>[{{name}}]</span>
+                <div class="delete">&cross;</div>
             </div>
         {{/each}}
     </div>

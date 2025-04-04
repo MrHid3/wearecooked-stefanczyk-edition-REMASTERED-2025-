@@ -7,16 +7,6 @@ const App = express()
 
 let current = "files"
 
-// const context = {
-//     "folders": [
-//         {"name": "skibidibi"}
-//     ],
-    
-//     "files": [
-//         {"name": "dab dab"}
-//     ]
-// }
-
 App.set('views', path.join(__dirname, 'views'));
 App.engine('hbs', hbs({ defaultLayout: 'main.hbs' }));
 App.set('view engine', 'hbs');
@@ -53,17 +43,40 @@ function getFiles(pathname){
 
 App.get("/", (req, res) => {
     res.render("view.hbs", {"folders": getDirectories(current), "files": getFiles(current)});
-})
+});
 
-App.get("/createfolder", (req, res) => {
-    console.log(path.join(__dirname, current, req.params.call))
-    fs.mkdir(path.join(__dirname, current, req.params.call), { recursive: false }, (err) => {
+App.post("/createfolder", (req, res) => {
+    console.log(path.join(__dirname, current, req.body.call))
+    fs.mkdir(path.join(__dirname, current, req.body.call), { recursive: false }, (err) => {
         console.log("skibidibi dab dab")
     });
-})
+    res.redirect("/");
+});
 
-App.use(express.static('static'))
+App.post("/createfile", (req, res) => {
+    console.log(path.join(__dirname, current, req.body.call))
+    fs.appendFile(path.join(__dirname, current, req.body.call), "", (err) => {
+        console.log("skibidibi dab dab")
+    });
+    res.redirect("/");
+});
+
+App.post('/uploadfile', function (req, res) {
+    let form = formidable({});
+    form.keepExtensions = true;
+    form.options = {
+        "filename": req.upload.name,
+    }
+    form.uploadDir = path.join(__dirname, current);
+    form.parse(req, function (err, result, file) {
+        console.log(file);
+        result.path = path.join(__dirname, current, file.upload.name);
+        res.redirect("/");
+    });
+});
+
+App.use(express.static('static'));
 
 App.listen(3000, () => {
     console.log("start serwera na porcie ", 3000)
-})
+});
