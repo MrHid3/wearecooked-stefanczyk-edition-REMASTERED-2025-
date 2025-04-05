@@ -42,19 +42,29 @@ function getFiles(pathname){
 }
 
 App.get("/", (req, res) => {
-    res.render("view.hbs", {"folders": getDirectories(current), "files": getFiles(current)});
+    res.render("view.hbs", {
+        "folders": getDirectories(current),
+        "files": getFiles(current),
+        "deleteFile": "deleteFile()"
+    });
 });
 
 App.post("/createfolder", (req, res) => {
-    console.log(path.join(__dirname, current, req.body.call))
-    fs.mkdir(path.join(__dirname, current, req.body.call), { recursive: false }, (err) => {
-        console.log("skibidibi dab dab")
-    });
+    let orig = req.body.call;
+    let name = orig;
+    while(fs.existsSync(path.join(__dirname, current, name))){
+        if(name.length > orig.length && name[name.length - 1] == ")"){
+            name = orig + " (" + (Number(name[name.length - 2]) + 1) + ")";
+        }else
+            name = orig + " (1)"
+    }
+    console.log(name)
+    fs.mkdir(path.join(__dirname, current, name),
+        { recursive: false }, (err) => {});
     res.redirect("/");
 });
 
 App.post("/createfile", (req, res) => {
-    console.log(path.join(__dirname, current, req.body.call))
     fs.appendFile(path.join(__dirname, current, req.body.call), "", (err) => {
         console.log("skibidibi dab dab")
     });
@@ -64,19 +74,26 @@ App.post("/createfile", (req, res) => {
 App.post('/uploadfile', function (req, res) {
     let form = formidable({});
     form.keepExtensions = true;
-    form.options = {
-        "filename": req.upload.name,
-    }
     form.uploadDir = path.join(__dirname, current);
     form.parse(req, function (err, result, file) {
-        console.log(file);
-        result.path = path.join(__dirname, current, file.upload.name);
+        fs.rename(file.upload.path, path.join(__dirname, current,file.upload.name),
+            (err) => {});
         res.redirect("/");
     });
 });
 
+App.post('/deletefile', function (req, res) {
+    fs.unlink(path.join(__dirname, current, req.body.filename), (err)=>{});
+    res.send("ok");
+})
+
+App.post('/deletefolder', function (req, res) {
+    fs.rmdir(path.join(__dirname, current, req.body.foldername), (err)=>{});
+    res.send("ok");
+})
+
 App.use(express.static('static'));
 
 App.listen(3000, () => {
-    console.log("start serwera na porcie ", 3000)
+    console.log("http://localhost:" + 3000)
 });

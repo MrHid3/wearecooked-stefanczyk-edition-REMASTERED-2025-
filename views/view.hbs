@@ -1,34 +1,50 @@
 <div class="left">
-    <form action="/createfolder" method="post">
+    <form action="/createfolder" method="post" accept-charset="utf-8">
         <input type="text" name="call" required>
         <input type="submit" value="create folder">
     </form>
-    <form action="/createfile" method="post">
+    <form action="/createfile" method="post" accept-charset="utf-8">
         <input type="text" name="call" required>
         <input type="submit" value="create file">
     </form>
-    <form enctype="multipart/form-data" action="/uploadfile" method="post">
-        <input type="file" name="upload" multiple required >
-        <input type="submit">
+    <form enctype="multipart/form-data" action="/uploadfile" method="post" accept-charset="utf-8" id="upload-file">
+        <label for="upload">Choose file</label>
+        <input type="file" name="upload" multiple required value="Select files">
+        <label for="upload-submit">Upload</label>
+        <input type="submit" name="upload-submit">
     </form>
 </div>
 
 <div class="right">
-    <h3>FOLERY</h3>
-    <div class="folders">
-        {{#each folders}}
-            <div class="folder">
+    <h3>FOLDERS</h3>
+    <div id="folders">
+    {{#each folders}}
+            <div class="folder" id="{{name}}folder">
                 <span>[{{name}}]</span>
-                <div class="delete">&cross;</div>
+                <div class="delete" onclick="fetch('/deletefolder', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                        'foldername': '{{name}}'
+                        })
+                        }); document.getElementById('folders').removeChild(
+                        document.getElementById('{{name}}folder'))">&cross;</div>
             </div>
         {{/each}}
     </div>
-    <h3>PLIKI</h3>
-    <div class="files">
+    <h3>FILES</h3>
+    <div id="files">
         {{#each files}}
-            <div class="file">
+            <div class="file" id="{{name}}file">
                 <span>[{{name}}]</span>
-                <div class="delete">&cross;</div>
+                <div class="delete" onclick="fetch('/deletefile', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            'filename': '{{name}}'
+                        })
+                        }); document.getElementById('files').removeChild(
+                document.getElementById('{{name}}file'))">&cross;</div>
             </div>
         {{/each}}
     </div>
