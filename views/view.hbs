@@ -16,10 +16,17 @@
 </div>
 
 <div class="right">
+    <div id="context-holder">
+        <span class="context">[<a href="/">home</i>]</span>
+        {{#each context}}
+        <span class="context-arrow">&gt;&gt;</span>
+        <span class="context">[<a href="/">{{folder}}</a>]</span>
+        {{/each}}
+    </div>
     <h3>FOLDERS</h3>
     <div id="folders">
     {{#each folders}}
-            <div class="folder" id="{{name}}folder">
+            <div class="folder" id="{{name}}Folder">
                 <span>[{{name}}]</span>
                 <div class="delete" onclick="fetch('/deletefolder', {
                         method: 'POST',
@@ -28,14 +35,14 @@
                         'foldername': '{{name}}'
                         })
                         }); document.getElementById('folders').removeChild(
-                        document.getElementById('{{name}}folder'))">&cross;</div>
+                        document.getElementById('{{name}}Folder'))">&cross;</div>
             </div>
         {{/each}}
     </div>
     <h3>FILES</h3>
     <div id="files">
         {{#each files}}
-            <div class="file" id="{{name}}file">
+            <div class="file" id="{{name}}File">
                 <span>[{{name}}]</span>
                 <div class="delete" onclick="fetch('/deletefile', {
                         method: 'POST',
@@ -44,7 +51,7 @@
                             'filename': '{{name}}'
                         })
                         }); document.getElementById('files').removeChild(
-                document.getElementById('{{name}}file'))">&cross;</div>
+                document.getElementById('{{name}}File'))">&cross;</div>
             </div>
         {{/each}}
     </div>
