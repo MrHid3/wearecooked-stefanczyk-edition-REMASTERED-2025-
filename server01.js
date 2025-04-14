@@ -12,28 +12,26 @@ App.use(express.json());
 App.use(express.urlencoded({ extended: false }));
 
 baseDir = path.join(__dirname, "files")
-let context = [];
 
-
-function getDirectories(pathname){
+function getDirectories(context){
     let folders = [];
-    fs.readdir(path.join(baseDir), pathname), (err, results)=> {
+    fs.readdir(path.join(baseDir, context), (err, results)=> {
         results.forEach(e => {
-            fs.lstat(path.join(baseDir, pathname, e), (err, stats)=>{
+            fs.lstat(path.join(baseDir, context, e), (err, stats)=>{
                 if (stats.isDirectory())
                     folders.push({"name": e})
                 }
             )
         })
-    }
+    })
     return folders;
 }
 
-function getFiles(pathname){
+function getFiles(context){
     let files = [];
-    fs.readdir(path.join(baseDir, pathname), (err, results)=> {
+    fs.readdir(path.join(baseDir, context), (err, results)=> {
         results.forEach(e => {
-            fs.lstat(path.join(baseDir, pathname, e), (err, stats)=>{
+            fs.lstat(path.join(baseDir, context, e), (err, stats)=>{
                 if (stats.isFile())
                     files.push({"name": e})
                 }
@@ -43,40 +41,50 @@ function getFiles(pathname){
     return files;
 }
 
-function getContext(){
-    let ret = ""
-    if (context.length > 0)
-        context.forEach((e) => {
-            ret = path.join(ret, e)
-        })
-    return ret;
-}
-
 App.get("/", (req, res) => {
+    res.redirect("/files")
+})
+
+App.get("/files/:context*", (req, res) => {
+    let context = path.join(req.params['context'], req.params[0])
+    console.log(context)
+    if(fs.existsSync(path.join(baseDir, context)))
+        res.render("view.hbs", {
+            "folders": getDirectories(context),
+            "files": getFiles(context),
+            "context": context,
+        });
+    else{
+        console.log(path.join(baseDir, context))
+        res.sendStatus("404")
+    }
+})
+
+App.get("/files", (req, res) => {
     res.render("view.hbs", {
-        "folders": getDirectories(getContext()),
-        "files": getFiles(getContext()),
-        "deleteFile": "deleteFile()",
-        "context": [{folder: "skibidi"}]
+        "folders": getDirectories(""),
+        "files": getFiles(""),
+        "context": ""
     });
 });
 
 App.post("/createfolder", (req, res) => {
+    let context = req.body.context
     let orig = req.body.call;
     let name = orig;
-    while(fs.existsSync(path.join(__dirname, getContext(), name))){
+    while(fs.existsSync(path.join(baseDir, context, name))){
         if(name.length > orig.length && name[name.length - 1] == ")"){
             name = orig + " (" + (Number(name[name.length - 2]) + 1) + ")";
         }else
             name = orig + " (1)"
     }
-    console.log(name)
-    fs.mkdir(path.join(__dirname, getContext(), name),
+    fs.mkdir(path.join(baseDir, context, name),
         { recursive: false }, (err) => {});
-    res.redirect("/");
+    res.redirect("/files/" + context);
 });
 
 App.post("/createfile", (req, res) => {
+    let context = req.body.context
     let orig = req.body.call;
     let name = orig;
     let split = name.length - 1;
@@ -85,18 +93,19 @@ App.post("/createfile", (req, res) => {
             break;
     }
     let i = 1;
-    while(fs.existsSync(path.join(__dirname, getContext(), name))){
+    while(fs.existsSync(path.join(baseDir, context, name))){
         name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
         i++;
     }
-    fs.appendFile(path.join(__dirname, getContext(), name), "", (err) => {});
-    res.redirect("/");
+    fs.appendFile(path.join(baseDir, context, name), "", (err) => {});
+    res.redirect("/files/" + context);
 });
 
 App.post('/uploadfile', function (req, res) {
+    let context = req.body.context
     let form = formidable({});
     form.keepExtensions = true;
-    form.uploadDir = path.join(__dirname, current);
+    form.uploadDir = path.join(baseDir, context);
     form.parse(req, function (err, result, file) {
         let orig = file.upload.name;
         let name = orig;
@@ -106,23 +115,24 @@ App.post('/uploadfile', function (req, res) {
                 break;
         }
         let i = 1;
-        while(fs.existsSync(path.join(__dirname, getContext(), name))){
+        while(fs.existsSync(path.join(baseDir, context, name))){
             name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
             i++;
         }
-        fs.rename(file.upload.path, path.join(__dirname, getContext(), name), (err) => {});
-        res.redirect("/");
+        fs.rename(file.upload.path, path.join(baseDir, context, name), (err) => {});
+        res.redirect("/files/" + context);
     });
 });
 
 App.post('/deletefile', function (req, res) {
-    console.log(path.join(baseDir, getContext(), req.body.filename))
-    fs.unlink(path.join(baseDir, getContext(), req.body.filename), (err)=>{});
+    let context = req.body.context
+    fs.unlink(path.join(baseDir, context, req.body.filename), (err)=>{});
     res.send("ok");
 })
 
 App.post('/deletefolder', function (req, res) {
-    fs.rmdir(path.join(baseDir, getContext(), req.body.foldername), (err)=>{});
+    let context = req.body.context
+    fs.rm(path.join(baseDir, context, req.body.foldername), {recursive: true},(err)=>{});
     res.send("ok");
 })
 
