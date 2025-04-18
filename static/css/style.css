@@ -4,7 +4,7 @@ body{
     justify-content: center;
     background-color: #cceeee;
     color: #474747;
-    height: 60vh;
+    height: 100vh;
     box-sizing: border-box;
 }
 
@@ -30,11 +30,12 @@ button{
     border-radius: 15px 0 0 0;
     padding: 10px;
     min-height: 70px;
-    height: fit-content;
+    height: min-content;
     width: fit-content;
     flex-wrap: wrap;
     min-width: 200px;
     animation-duration: 0.5s;
+    overflow: hidden;
 }
 
 .folder, .file{

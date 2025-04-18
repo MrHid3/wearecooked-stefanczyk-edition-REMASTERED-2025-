@@ -19,7 +19,7 @@
 
 <div class="right">
     <div id="context-holder">
-        <span class="context">[<a href="/">home</i>]</span>
+        <span class="context">[<a href="/">home</a>]</span>
         {{#each context}}
         <span class="context-arrow">&gt;&gt;</span>
         <span class="context">[<a href="/">{{folder}}</a>]</span>
@@ -29,7 +29,7 @@
     <div id="folders">
         {{#each folders}}
                 <div class="folder" id="{{name}}Folder">
-                    <a href="/files/{{../context}}/{{name}}"> 
+                    <a href="/files{{../context}}/{{name}}">
                     <span>[{{name}}]</span>
                     </a>
                     <div class="delete" onclick="fetch('/deletefolder', {
@@ -37,7 +37,7 @@
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({
                             'foldername': '{{name}}',
-                            'context': '{{context}}'
+                            'context': '{{../context}}'
                             })
                             }); document.getElementById('folders').removeChild(
                             document.getElementById('{{name}}Folder'))">&cross;</div>
@@ -54,7 +54,7 @@
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             'filename': '{{name}}',
-                            'context': '{{context}}'
+                            'context': '{{../context}}'
                         })
                         }); document.getElementById('files').removeChild(
                 document.getElementById('{{name}}File'))">&cross;</div>
