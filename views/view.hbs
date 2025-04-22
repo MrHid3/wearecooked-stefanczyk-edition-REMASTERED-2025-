@@ -1,12 +1,12 @@
 <div class="left">
     <form action="/createfolder" method="post" accept-charset="utf-8">
         <input type="text" name="call" required>
-        <input type="hidden" name="context" value={{context}}>
+        <input type="hidden" name="context" value={{urlencode context}}>
         <input type="submit" value="create folder">
     </form>
     <form action="/createfile" method="post" accept-charset="utf-8">
         <input type="text" name="call" required>
-        <input type="hidden" name="context" value={{context}}>
+        <input type="hidden" name="context" value={{urlencode context}}>
         <input type="submit" value="create file">
     </form>
     <form enctype="multipart/form-data" action="/uploadfile" method="post" accept-charset="utf-8" id="upload-file">
@@ -19,28 +19,31 @@
 
 <div class="right">
     <div id="context-holder">
-        <span class="context">[<a href="/">home</a>]</span>
-        {{#each context}}
-        <span class="context-arrow">&gt;&gt;</span>
-        <span class="context">[<a href="/">{{folder}}</a>]</span>
+        home
+        {{#each split}}
+            {{#if this}}
+                <a href={{#each (splitter split @index)}}
+                {{/each}}></a>
+                >> {{this}}
+            {{/if}}
         {{/each}}
     </div>
     <h3>FOLDERS</h3>
     <div id="folders">
         {{#each folders}}
-                <div class="folder" id="{{name}}Folder">
-                    <a href="/files{{../context}}/{{name}}">
+            <div class="folder" id="{{urlencode name}}Folder">
+                <a href="/files{{urlencode ../context}}/{{urlencode name}}">
                     <span>[{{name}}]</span>
-                    </a>
-                    <div class="delete" onclick="fetch('/deletefolder', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                            'foldername': '{{name}}',
-                            'context': '{{../context}}'
-                            })
-                            }); document.getElementById('folders').removeChild(
-                            document.getElementById('{{name}}Folder'))">&cross;</div>
+                </a>
+                <div class="delete" onclick="fetch('/deletefolder', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        'foldername': '{{urlencode name}}',
+                        'context': '{{urlencode ../context}}'
+                        })});
+                document.getElementById('folders').removeChild(
+                            document.getElementById('{{urlencode name}}Folder'))">&cross;</div>
                 </div>
         {{/each}}
     </div>
@@ -53,11 +56,11 @@
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
-                            'filename': '{{name}}',
+                            'filename': '{{urlencode name}}',
                             'context': '{{../context}}'
                         })
                         }); document.getElementById('files').removeChild(
-                document.getElementById('{{name}}File'))">&cross;</div>
+                document.getElementById('{{urlencode name}}File'))">&cross;</div>
             </div>
         {{/each}}
     </div>

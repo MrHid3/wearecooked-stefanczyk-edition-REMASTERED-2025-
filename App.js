@@ -11,6 +11,25 @@ App.set('view engine', 'hbs');
 App.use(express.json());
 App.use(express.urlencoded({ extended: false }));
 
+App.engine('hbs', hbs({
+    defaultLayout: 'main.hbs' ,
+    helpers: {
+        urlencode: function(name) {
+            return encodeURI(name);
+        },
+        prettypath: function(path){
+            let dirs = path.split('/');
+            console.log(dirs);
+            return dirs;
+        },
+        splitter: function(path, index){
+            console.log(path);
+            return path.slice(0, index);
+        }
+
+    }
+}));
+
 baseDir = path.join(__dirname, "files")
 
 function getDirectories(context){
@@ -47,12 +66,12 @@ App.get("/", (req, res) => {
 
 App.get("/files/:context*", (req, res) => {
     let context = path.join(req.params['context'], req.params[0])
-    console.log(context)
     if(fs.existsSync(path.join(baseDir, context)))
         res.render("view.hbs", {
             "folders": getDirectories(context),
             "files": getFiles(context),
             "context": "/" + context,
+            "split": ("/" + context).split("/")
         });
     else{
         res.sendStatus("404")
@@ -68,7 +87,7 @@ App.get("/files", (req, res) => {
 });
 
 App.post("/createfolder", (req, res) => {
-    let context = req.body.context
+    let context = decodeURI(req.body.context);
     let orig = req.body.call;
     let name = orig;
     while(fs.existsSync(path.join(baseDir, context, name))){
@@ -79,12 +98,11 @@ App.post("/createfolder", (req, res) => {
     }
     fs.mkdir(path.join(baseDir, context, name),
         { recursive: false }, (err) => {});
-    console.log(context)
     res.redirect("/files" + context);
 });
 
 App.post("/createfile", (req, res) => {
-    let context = req.body.context
+    let context = decodeURI(req.body.context);
     let orig = req.body.call;
     let name = orig;
     let split = name.length - 1;
