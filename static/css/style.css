@@ -1,11 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
     background-color: #cceeee;
     color: #474747;
     height: 100vh;
     box-sizing: border-box;
+}
+
+.holder{
+    width: 100%;
+    height: 90%;
+    display: flex;
+    flex-direction: row;
 }
 
 button{
@@ -15,23 +25,23 @@ button{
     line-height: 25px;
 }
 
-.left, .right{
-    display: flex;
-    flex-direction: column;
-    width: 30%;
-    justify-content: center;
-    align-items: center;
+.left{
+    width: 25%;
+    height: 100%;
+}
+
+.right{
+    width: 75%;
+    height: 100%;
 }
 
 #folders, #files{
     background-color: rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: row;
-    border-radius: 15px 0 0 0;
     padding: 10px;
-    min-height: 70px;
-    height: min-content;
-    width: fit-content;
+    height: fit-content;
+    width: 100%;
     flex-wrap: wrap;
     min-width: 200px;
     animation-duration: 0.5s;
@@ -132,19 +142,27 @@ h3{
 
 #context-holder{
     background-color: rgba(0, 0, 0, 0.3);
-    width: fit-content;
+    width: 100%;
     height: fit-content;
-    padding: 5px 10px;
+    padding: 20px 0;
     border-radius: 0 5px 5px 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
 .context{
     width: fit-content;
-    color: #dddd33;
+    color: white;
+    text-decoration: none;
+    font-size: 25px;
 }
 
 .context-arrow{
     color: #dddd33;
+    font-size: 25px;
+    padding: 0 10px;
 }
 
 .context a{

@@ -1,69 +1,75 @@
-<div class="left">
-    <form action="/createfolder" method="post" accept-charset="utf-8">
-        <input type="text" name="call" required>
-        <input type="hidden" name="context" value={{urlencode context}}>
-        <input type="submit" value="create folder">
-    </form>
-    <form action="/createfile" method="post" accept-charset="utf-8">
-        <input type="text" name="call" required>
-        <input type="hidden" name="context" value={{urlencode context}}>
-        <input type="submit" value="create file">
-    </form>
-    <form enctype="multipart/form-data" action="/uploadfile" method="post" accept-charset="utf-8" id="upload-file">
-        <label for="upload">Choose file</label>
-        <input type="file" name="upload" multiple required value="Select files">
-        <label for="upload-submit">Upload</label>
-        <input type="submit" name="upload-submit">
-    </form>
-</div>
-
-<div class="right">
-    <div id="context-holder">
-        home
+<div id="context-holder">
+    <a href="/files" class="context">home</a>
+    {{#if split}}
         {{#each split}}
-            {{#if this}}
-                <a href={{#each (splitter split @index)}}
-                {{/each}}></a>
-                >> {{this}}
-            {{/if}}
+            <span class="context-arrow">&gt;&gt;</span><a href="{{urlencode path}}" class="context">{{display}}</a>
         {{/each}}
+    {{/if}}
+</div>
+
+<div class="holder">
+    <div class="left">
+        <form action="/createfolder" method="post" accept-charset="utf-8">
+            <input type="text" name="call" required>
+            <input type="hidden" name="context" value={{urlencode context}}>
+            <input type="submit" value="create folder">
+        </form>
+        <form action="/createfile" method="post" accept-charset="utf-8">
+            <input type="text" name="call" required>
+            <input type="hidden" name="context" value={{urlencode context}}>
+            <input type="submit" value="create file">
+        </form>
+        <form enctype="multipart/form-data" action="/uploadfile" method="post" accept-charset="utf-8" id="upload-file">
+            <input type="hidden" name="context" value={{urlencode context}}>
+            <label for="upload">Choose file</label>
+            <input type="file" id="upload" name="upload" multiple required>
+            <label for="upload-submit">Upload</label>
+            <input type="submit" id="upload-submit">
+        </form>
     </div>
-    <h3>FOLDERS</h3>
-    <div id="folders">
-        {{#each folders}}
-            <div class="folder" id="{{urlencode name}}Folder">
-                <a href="/files{{urlencode ../context}}/{{urlencode name}}">
+
+    <div class="right">
+        <div id="folders">
+            {{#each folders}}
+                <div class="folder" id="{{urlencode name}}Folder">
+                    <a href="/files{{urlencode ../context}}/{{urlencode name}}">
+                        <span>[{{name}}]</span>
+                    </a>
+                    <div class="delete" onclick="deleteFolder('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
+                    </div>
+            {{/each}}
+        </div>
+        <div id="files">
+            {{#each files}}
+                <div class="file" id="{{name}}File">
                     <span>[{{name}}]</span>
-                </a>
-                <div class="delete" onclick="fetch('/deletefolder', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        'foldername': '{{urlencode name}}',
-                        'context': '{{urlencode ../context}}'
-                        })});
-                document.getElementById('folders').removeChild(
-                            document.getElementById('{{urlencode name}}Folder'))">&cross;</div>
+                    <div class="delete" onclick="deleteFile('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                 </div>
-        {{/each}}
-    </div>
-    <h3>FILES</h3>
-    <div id="files">
-        {{#each files}}
-            <div class="file" id="{{name}}File">
-                <span>[{{name}}]</span>
-                <div class="delete" onclick="fetch('/deletefile', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            'filename': '{{urlencode name}}',
-                            'context': '{{../context}}'
-                        })
-                        }); document.getElementById('files').removeChild(
-                document.getElementById('{{urlencode name}}File'))">&cross;</div>
-            </div>
-        {{/each}}
+            {{/each}}
+        </div>
     </div>
 </div>
 
-{{!-- TODO przerzuć fetche do <scripta> --}}
+<script>
+    function deleteFolder(name, context) {
+        fetch('/deletefolder', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                foldername: name,
+                context: context
+            })});
+        document.getElementById('folders').removeChild(document.getElementById(`${name}Folder`))
+    }
+    function deleteFile(name, context){
+        fetch('/deletefile', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                filename: name,
+                context: context
+            })
+        });
+        document.getElementById('files').removeChild(document.getElementById(`${name}File`))
+    }
+</script>

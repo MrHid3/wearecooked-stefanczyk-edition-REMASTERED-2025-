@@ -17,16 +17,6 @@ App.engine('hbs', hbs({
         urlencode: function(name) {
             return encodeURI(name);
         },
-        prettypath: function(path){
-            let dirs = path.split('/');
-            console.log(dirs);
-            return dirs;
-        },
-        splitter: function(path, index){
-            console.log(path);
-            return path.slice(0, index);
-        }
-
     }
 }));
 
@@ -60,6 +50,19 @@ function getFiles(context){
     return files;
 }
 
+function prettySplit(text){
+    let list = text.split('/');
+    let ret = [];
+    for(let i = 0; i < list.length; i++){
+        let tmp = "/files/";
+        for(let j = 0; j <= i; j++){
+            tmp += list[j] + "/";
+        }
+        ret.push({display: list[i], path: tmp})
+    }
+    return ret;
+}
+
 App.get("/", (req, res) => {
     res.redirect("/files")
 })
@@ -71,7 +74,7 @@ App.get("/files/:context*", (req, res) => {
             "folders": getDirectories(context),
             "files": getFiles(context),
             "context": "/" + context,
-            "split": ("/" + context).split("/")
+            "split": prettySplit(context)
         });
     else{
         res.sendStatus("404")
@@ -120,11 +123,12 @@ App.post("/createfile", (req, res) => {
 });
 
 App.post('/uploadfile', function (req, res) {
-    let context = req.body.context
+    let context = decodeURI(req.body.context);
     let form = formidable({});
     form.keepExtensions = true;
     form.uploadDir = path.join(baseDir, context);
     form.parse(req, function (err, result, file) {
+        console.log(result);
         let orig = file.upload.name;
         let name = orig;
         let split = name.length - 1;
@@ -133,7 +137,7 @@ App.post('/uploadfile', function (req, res) {
                 break;
         }
         let i = 1;
-        while(fs.existsSync(path.join(baseDir, context, name))){
+        while(fs.existsSync(path.join(baseDir, result, name))){
             name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
             i++;
         }
@@ -143,14 +147,14 @@ App.post('/uploadfile', function (req, res) {
 });
 
 App.post('/deletefile', function (req, res) {
-    let context = req.body.context;
-    fs.unlink(path.join(baseDir, context, req.body.filename), (err)=>{});
+    let context = decodeURI(req.body.context);
+    fs.unlink(path.join(baseDir, context, decodeURI(req.body.filename)), (err)=>{});
     res.send("ok");
 })
 
 App.post('/deletefolder', function (req, res) {
     let context = req.body.context
-    fs.rm(path.join(baseDir, context, req.body.foldername), {recursive: true},(err)=>{});
+    fs.rm(path.join(baseDir, decodeURI(context), decodeURI(req.body.foldername)), {recursive: true},(err)=>{});
     res.send("ok");
 })
 
