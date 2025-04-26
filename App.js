@@ -123,26 +123,53 @@ App.post("/createfile", (req, res) => {
 });
 
 App.post('/uploadfile', function (req, res) {
-    let context = decodeURI(req.body.context);
     let form = formidable({});
     form.keepExtensions = true;
-    form.uploadDir = path.join(baseDir, context);
-    form.parse(req, function (err, result, file) {
-        console.log(result);
-        let orig = file.upload.name;
-        let name = orig;
-        let split = name.length - 1;
-        for(; split--; split >= 0){
-            if(name[split] == ".")
-                break;
+    form.uploadDir = path.join(baseDir);
+    form.multiples = true;
+    form.parse(req, function (err, result, files) {
+        // console.log(files)
+        if (files.upload.length > 1){
+            files.upload.forEach(file => {
+                req.uploadDir = path.join(baseDir, result.context);
+                let orig = file.name;
+                let name = orig;
+                let split = name.length - 1;
+                for(; split--; split >= 0){
+                    if(name[split] == ".")
+                        break;
+                }
+                let i = 1;
+                while(fs.existsSync(path.join(baseDir, result.context, name))){
+                    name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
+                    i++;
+                }
+                fs.rename(file.path, path.join(baseDir, result.context, name), (err) => {
+                    console.log(file.path, name);
+                    if(err) console.log(err);
+                });
+            })
+        }else if(files){
+            console.log(files)
+            req.uploadDir = path.join(baseDir, result.context);
+            let orig = files.upload.name;
+            let name = orig;
+            let split = name.length - 1;
+            for (; split--; split >= 0) {
+                if (name[split] == ".")
+                    break;
+            }
+            let i = 1;
+            while (fs.existsSync(path.join(baseDir, result.context, name))) {
+                name = `${orig.slice(0, split)} (${i})${orig.slice(split)}`
+                i++;
+            }
+            fs.rename(files.upload.path, path.join(baseDir, result.context, name), (err) => {
+                console.log(files.upload.path, name);
+                if (err) console.log(err);
+            });
         }
-        let i = 1;
-        while(fs.existsSync(path.join(baseDir, result, name))){
-            name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
-            i++;
-        }
-        fs.rename(file.upload.path, path.join(baseDir, context, name), (err) => {});
-        res.redirect("/files" + context);
+        res.redirect("/files" + result.context);
     });
 });
 

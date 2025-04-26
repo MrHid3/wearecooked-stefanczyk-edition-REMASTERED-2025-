@@ -8,17 +8,33 @@
 </div>
 
 <div class="holder">
+    <dialog id="create-folder-dialog">
+        <div class="dialog-div">
+            <h2>Folder Name</h2>
+            <form action="/createfolder" method="post" accept-charset="utf-8">
+                <input type="text" name="call" required>
+                <input type="hidden" name="context" value={{urlencode context}}>
+                <input type="submit" value="create folder">
+                <button id="close-create-folder-dialog-button">Cancel</button>
+            </form>
+        </div>
+    </dialog>
+    <dialog id="create-file-dialog">
+        <div class="dialog-div">
+            <h2>File Name</h2>
+            <form action="/createfile" method="post" accept-charset="utf-8">
+                <input type="text" name="call" required>
+                <input type="hidden" name="context" value={{urlencode context}}>
+                <input type="submit" value="create file">
+                <button id="close-create-file-dialog-button">Cancel</button>
+            </form>
+        </div>
+    </dialog>
     <div class="left">
-        <form action="/createfolder" method="post" accept-charset="utf-8">
-            <input type="text" name="call" required>
-            <input type="hidden" name="context" value={{urlencode context}}>
-            <input type="submit" value="create folder">
-        </form>
-        <form action="/createfile" method="post" accept-charset="utf-8">
-            <input type="text" name="call" required>
-            <input type="hidden" name="context" value={{urlencode context}}>
-            <input type="submit" value="create file">
-        </form>
+        <div id="dialog-button-holder">
+            <button id="create-folder-dialog-button">Create folder</button>
+            <button id="create-file-dialog-button">Create file</button>
+        </div>
         <form enctype="multipart/form-data" action="/uploadfile" method="post" accept-charset="utf-8" id="upload-file">
             <input type="hidden" name="context" value={{urlencode context}}>
             <label for="upload">Choose file</label>
@@ -41,7 +57,7 @@
         </div>
         <div id="files">
             {{#each files}}
-                <div class="file" id="{{name}}File">
+                <div class="file" id="{{urlencode name}}File">
                     <span>[{{name}}]</span>
                     <div class="delete" onclick="deleteFile('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                 </div>
@@ -51,6 +67,29 @@
 </div>
 
 <script>
+    const createFolderDialog = document.getElementById('create-folder-dialog');
+    const createFolderDialogButton = document.getElementById('create-folder-dialog-button');
+    const closeCreateFolderDialogButton = document.getElementById('close-create-folder-dialog-button');
+    const createFileDialog = document.getElementById('create-file-dialog');
+    const createFileDialogButton = document.getElementById('create-file-dialog-button');
+    const closeCreateFileDialogButton = document.getElementById('close-create-file-dialog-button');
+
+    createFolderDialogButton.addEventListener('click', () => {
+        createFolderDialog.showModal();
+    });
+
+    closeCreateFolderDialogButton.addEventListener('click', e => {
+        createFolderDialog.close()
+    });
+
+    createFileDialogButton.addEventListener('click', () => {
+        createFileDialog.showModal();
+    });
+
+    closeCreateFileDialogButton.addEventListener('click', () => {
+        createFileDialog.close()
+    });
+
     function deleteFolder(name, context) {
         fetch('/deletefolder', {
             method: 'POST',
