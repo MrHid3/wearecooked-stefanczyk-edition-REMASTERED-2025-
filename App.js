@@ -3,6 +3,7 @@ const path = require("path")
 const express = require("express")
 const hbs = require('express-handlebars');
 const formidable = require('formidable');
+const archiver = require("archiver")
 const App = express()
 
 App.set('views', path.join(__dirname, 'views'));
@@ -99,8 +100,7 @@ App.post("/createfolder", (req, res) => {
         }else
             name = orig + " (1)"
     }
-    fs.mkdir(path.join(baseDir, context, name),
-        { recursive: false }, (err) => {});
+    fs.mkdir(path.join(baseDir, context, name), { recursive: false }, (err) => {});
     res.redirect("/files" + context);
 });
 
@@ -186,12 +186,51 @@ App.post('/deletefolder', function (req, res) {
 })
 
 App.get("/downloadfile/:context*", function (req, res) {
-    const file = path.join(baseDir, req.params['context'], req.params[0]);
-    console.log(file)
-    res.download(file);
+    res.download(path.join(baseDir, req.params['context'], req.params[0]));
 })
 
+App.post("/downloadfolder", function (req, res) {
+    const tempDir = path.join(__dirname, "temp");
+    const outputPath = path.join(tempDir, req.body.name + '.zip');
+
+    fs.rm(tempDir, { recursive: true, force: true }, (err) => {
+        if (err) return res.status(500).send('Failed to clean temp directory');
+
+        fs.mkdir(tempDir, { recursive: true }, (err) => {
+            if (err) return res.status(500).send('Failed to create temp directory');
+
+            const output = fs.createWriteStream(outputPath);
+            const archive = archiver('zip', { zlib: { level: 9 } });
+            archive.pipe(output);
+
+            output.on('close', () => {
+                res.download(outputPath, (err) => {
+                    if (err) {
+                        console.error('Download failed:', err);
+                        res.status(500).send('Download failed');
+                    }
+                    fs.unlink(outputPath, () => {});
+                });
+            });
+
+            archive.on('error', (err) => {
+                console.error('Archive error:', err);
+                res.status(500).send('Archive creation failed');
+            });
+
+            // Add directory to archive
+            archive.directory(path.join(baseDir, req.body.context, req.body.name), false);
+
+            // Finalize the archive
+            archive.finalize();
+        });
+    });
+});
+
+// App.post('/rename')
+
 App.use(express.static('static'));
+App.use(express.static('temp'));
 
 App.listen(3000, () => {
     console.log("http://localhost:" + 3000)

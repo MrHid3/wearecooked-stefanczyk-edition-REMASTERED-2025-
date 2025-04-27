@@ -51,6 +51,8 @@
                     <a href="/files{{urlencode ../context}}/{{urlencode name}}">
                         <span>[{{name}}]</span>
                     </a>
+                    <a class="rename" href="/rename{{urlencode ../context}}/{{urlencode name}}">&#9997;</a>
+                    <div class="download" onclick="downloadFolder('{{urlencode ../context}}', '{{urlencode name}}')">&#9735;</div>
                     <div class="delete" onclick="deleteFolder('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                     </div>
             {{/each}}
@@ -59,6 +61,7 @@
             {{#each files}}
                 <div class="file" id="{{urlencode name}}File">
                     <span>[{{name}}]</span>
+                    <a class="rename" href="/rename{{urlencode ../context}}/{{urlencode name}}">&#9997;</a>
                     <a class="download" href="/downloadfile{{urlencode ../context}}/{{urlencode name}}">&#9735;</a>
                     <div class="delete" onclick="deleteFile('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                 </div>
@@ -102,6 +105,17 @@
         document.getElementById('folders').removeChild(document.getElementById(`${name}Folder`))
     }
 
+    function downloadFolder(name, context) {
+        fetch('/downloadfolder', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: name,
+                context: context
+            })
+        })
+    }
+
     // function downloadFile(name, context) {
     //     fetch('/downloadfile', {
     //         method: 'POST',
@@ -113,7 +127,7 @@
     //     })
     // }
 
-    function deleteFile(name, context){
+    function deleteFile(context, name){
         fetch('/deletefile', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
