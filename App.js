@@ -68,7 +68,7 @@ App.get("/", (req, res) => {
 })
 
 App.get("/files/:context*", (req, res) => {
-    let context = path.join(req.params['context'], req.params[0])
+    let context = path.join(decodeURI(req.params['context']), decodeURI(req.params[0]))
     if(fs.existsSync(path.join(baseDir, context)))
         res.render("view.hbs", {
             "folders": getDirectories(context),
@@ -183,6 +183,12 @@ App.post('/deletefolder', function (req, res) {
     let context = req.body.context
     fs.rm(path.join(baseDir, decodeURI(context), decodeURI(req.body.foldername)), {recursive: true},(err)=>{});
     res.send("ok");
+})
+
+App.get("/downloadfile/:context*", function (req, res) {
+    const file = path.join(baseDir, req.params['context'], req.params[0]);
+    console.log(file)
+    res.download(file);
 })
 
 App.use(express.static('static'));

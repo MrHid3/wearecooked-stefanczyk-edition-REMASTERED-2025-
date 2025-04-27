@@ -59,6 +59,7 @@
             {{#each files}}
                 <div class="file" id="{{urlencode name}}File">
                     <span>[{{name}}]</span>
+                    <a class="download" href="/downloadfile{{urlencode ../context}}/{{urlencode name}}">&#9735;</a>
                     <div class="delete" onclick="deleteFile('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                 </div>
             {{/each}}
@@ -100,6 +101,18 @@
             })});
         document.getElementById('folders').removeChild(document.getElementById(`${name}Folder`))
     }
+
+    // function downloadFile(name, context) {
+    //     fetch('/downloadfile', {
+    //         method: 'POST',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             name: name,
+    //             context: context
+    //         })
+    //     })
+    // }
+
     function deleteFile(name, context){
         fetch('/deletefile', {
             method: 'POST',
