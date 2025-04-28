@@ -52,12 +52,13 @@ function getFiles(context){
 }
 
 function prettySplit(text){
-    let list = text.split('/');
+    let list = text.split('\\'); //system operacyjny stworzony przez deranged psychopatów
+    // let list = text.split('/'); //zdrowy system operacyjny
     let ret = [];
     for(let i = 0; i < list.length; i++){
         let tmp = "/files/";
         for(let j = 0; j <= i; j++){
-            tmp += list[j] + "/";
+            tmp += list[j] + "/"; 
         }
         ret.push({display: list[i], path: tmp})
     }
@@ -72,13 +73,15 @@ App.get("/files/:context*", (req, res) => {
     let context = path.join(decodeURI(req.params['context']), decodeURI(req.params[0]))
     if(fs.existsSync(path.join(baseDir, context)))
         res.render("view.hbs", {
-            "folders": getDirectories(context),
-            "files": getFiles(context),
-            "context": "/" + context,
-            "split": prettySplit(context)
+            folders: getDirectories(context),
+            files: getFiles(context),
+            context: "/" + context,
+            split: prettySplit(context)
         });
     else{
-        res.sendStatus("404")
+        res.render("notFound.hbs", {
+            context: "/" + context
+        })
     }
 })
 
@@ -106,7 +109,7 @@ App.post("/createfolder", (req, res) => {
 
 App.post("/createfile", (req, res) => {
     let context = decodeURI(req.body.context);
-    let orig = req.body.call;
+    let orig = req.body.call + "." + req.body.extension;
     let name = orig;
     let split = name.length - 1;
     for(; split--; split >= 0){
@@ -118,7 +121,21 @@ App.post("/createfile", (req, res) => {
         name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
         i++;
     }
-    fs.appendFile(path.join(baseDir, context, name), "", (err) => {});
+    let content;
+    switch (req.body.extension){
+        case "css":
+            content = "body{ background-color: black;}";
+            break;
+        case "html":
+            content = "<!DOCTYPE HTML><html><head></head><body></body></html>"
+            break;
+        case "json":
+            content = "{epic: 'project'}"
+            break;
+        default:
+            content = "no extensiton provided"
+    }
+    fs.appendFile(path.join(baseDir, context, name), content, (err) => {});
     res.redirect("/files" + context);
 });
 
@@ -131,7 +148,7 @@ App.post('/uploadfile', function (req, res) {
         // console.log(files)
         if (files.upload.length > 1){
             files.upload.forEach(file => {
-                req.uploadDir = path.join(baseDir, result.context);
+                // req.uploadDir = path.join(baseDir, result.context);
                 let orig = file.name;
                 let name = orig;
                 let split = name.length - 1;
@@ -140,18 +157,19 @@ App.post('/uploadfile', function (req, res) {
                         break;
                 }
                 let i = 1;
-                while(fs.existsSync(path.join(baseDir, result.context, name))){
+                while(fs.existsSync(path.join(baseDir, decodeURI(result.context), name))){
                     name = orig.slice(0, split) + " (" + i + ")" + orig.slice(split)
                     i++;
                 }
-                fs.rename(file.path, path.join(baseDir, result.context, name), (err) => {
-                    console.log(file.path, name);
+                fs.rename(file.path, path.join(baseDir, decodeURI(result.context), name), (err) => {
+                    // console.log(file.path, name);
                     if(err) console.log(err);
                 });
-            })
+            });
+            res.redirect("/files" + result.context);
         }else if(files){
-            console.log(files)
-            req.uploadDir = path.join(baseDir, result.context);
+            // console.log(files)
+            // req.uploadDir = path.join(baseDir, result.context);
             let orig = files.upload.name;
             let name = orig;
             let split = name.length - 1;
@@ -160,16 +178,16 @@ App.post('/uploadfile', function (req, res) {
                     break;
             }
             let i = 1;
-            while (fs.existsSync(path.join(baseDir, result.context, name))) {
+            while (fs.existsSync(path.join(baseDir, decodeURI(result.context), name))) {
                 name = `${orig.slice(0, split)} (${i})${orig.slice(split)}`
                 i++;
             }
-            fs.rename(files.upload.path, path.join(baseDir, result.context, name), (err) => {
-                console.log(files.upload.path, name);
+            fs.rename(files.upload.path, path.join(baseDir, decodeURI(result.context), name), (err) => {
+                // console.log(files.upload.path, name);
                 if (err) console.log(err);
+                res.redirect("/files" + result.context);
             });
         }
-        res.redirect("/files" + result.context);
     });
 });
 
@@ -189,21 +207,23 @@ App.get("/downloadfile/:context*", function (req, res) {
     res.download(path.join(baseDir, req.params['context'], req.params[0]));
 })
 
-App.post("/downloadfolder", function (req, res) {
+App.get("/downloadfolder/:context*", function (req, res) {
+    let context = decodeURI(req.params['context'])
+    let name = decodeURI(req.params[0])
+    if (name == ""){
+        name = context;
+        context = "";
+    }
     const tempDir = path.join(__dirname, "temp");
-    const outputPath = path.join(tempDir, req.body.name + '.zip');
+    const outputPath = path.join(tempDir, name + '.zip');
 
     fs.rm(tempDir, { recursive: true, force: true }, (err) => {
-        if (err) return res.status(500).send('Failed to clean temp directory');
-
-        fs.mkdir(tempDir, { recursive: true }, (err) => {
-            if (err) return res.status(500).send('Failed to create temp directory');
-
+        fs.mkdir(tempDir, { recursive: true }, () => {
             const output = fs.createWriteStream(outputPath);
             const archive = archiver('zip', { zlib: { level: 9 } });
             archive.pipe(output);
-
             output.on('close', () => {
+                // console.log(outputPath)
                 res.download(outputPath, (err) => {
                     if (err) {
                         console.error('Download failed:', err);
@@ -212,22 +232,22 @@ App.post("/downloadfolder", function (req, res) {
                     fs.unlink(outputPath, () => {});
                 });
             });
-
             archive.on('error', (err) => {
                 console.error('Archive error:', err);
                 res.status(500).send('Archive creation failed');
             });
-
-            // Add directory to archive
-            archive.directory(path.join(baseDir, req.body.context, req.body.name), false);
-
-            // Finalize the archive
+            archive.directory(path.join(baseDir, context, name), false);
             archive.finalize();
         });
     });
 });
 
-// App.post('/rename')
+App.post('/rename', function(req, res){
+    fs.rename(path.join(baseDir, decodeURI(req.body.context), decodeURI(req.body.previous)), path.join(baseDir, decodeURI(req.body.context), decodeURI(req.body.new_name)), (err)=>{
+        if(err) console.log(err);
+    });
+    res.redirect(`/files${req.body.context}`);
+})
 
 App.use(express.static('static'));
 App.use(express.static('temp'));
