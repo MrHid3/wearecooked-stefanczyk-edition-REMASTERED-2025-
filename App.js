@@ -128,6 +128,7 @@ App.post('/uploadfile', function (req, res) {
     form.uploadDir = path.join(baseDir);
     form.multiples = true;
     form.parse(req, function (err, result, files) {
+        // console.log(files)
         if (files.upload.length > 1){
             files.upload.forEach(file => {
                 req.uploadDir = path.join(baseDir, result.context);
@@ -149,6 +150,7 @@ App.post('/uploadfile', function (req, res) {
                 });
             })
         }else if(files){
+            console.log(files)
             req.uploadDir = path.join(baseDir, result.context);
             let orig = files.upload.name;
             let name = orig;
@@ -230,6 +232,6 @@ App.post("/downloadfolder", function (req, res) {
 App.use(express.static('static'));
 App.use(express.static('temp'));
 
-App.listen(2137, () => {
+App.listen(3000, () => {
     console.log("http://localhost:" + 3000)
 });

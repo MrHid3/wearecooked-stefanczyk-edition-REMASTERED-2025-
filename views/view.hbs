@@ -30,7 +30,7 @@
             </form>
         </div>
     </dialog>
-    <div id="left">
+    <div class="left">
         <div id="dialog-button-holder">
             <button id="create-folder-dialog-button">Create folder</button>
             <button id="create-file-dialog-button">Create file</button>
@@ -44,7 +44,7 @@
         </form>
     </div>
 
-    <div id="right">
+    <div class="right">
         <div id="folders">
             {{#each folders}}
                 <div class="folder" id="{{urlencode name}}Folder">
@@ -137,57 +137,5 @@
             })
         });
         document.getElementById('files').removeChild(document.getElementById(`${name}File`))
-    }
-
-    document.querySelector("html").ondragover = function (e) {
-        console.log("dragover nad dokumentem html")
-        e.preventDefault(); // usuwa domyślne zachowanie strony po wykonaniu zdarzenia, warto zakomentować i sprawdzić
-        e.stopPropagation(); // zatrzymuje dalszą propagację zdarzenia, warto zakomentować i sprawdzić
-    }
-
-    const right = document.querySelector("#right");
-    right.ondragenter = function (e) {
-        right.classList.add('drop');
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    document.querySelector("#right").ondragover = function (e) {
-        right.classList.add('drop');
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    document.querySelector("#right").ondragleave = function (e) {
-        right.classList.remove('drop');
-        e.stopPropagation();
-        e.preventDefault();
-
-    }
-
-    document.querySelector("#right").ondrop = async function (e) {
-
-        right.classList.remove('drop');
-        e.stopPropagation();
-        e.preventDefault();
-
-        const files = e.dataTransfer.files;
-
-        // teraz utwórz obiekt FormData zastępujący formularz
-        // oraz dodaj do niego po kolei wszystkie pliki z powyższej listy files
-        // na koniec użyj fetcha do uploadu plików
-
-        const fd = new FormData();
-        console.log(files.length);
-        for (let i = 0; i < files.length; i++) {
-            fd.append('upload', files[i]);
-        }
-
-        fd.append('context', '{{urlencode context}}')
-        await fetch('/uploadfile', {
-            method: 'POST',
-            body: fd
-        });
-        location.reload();
     }
 </script>
