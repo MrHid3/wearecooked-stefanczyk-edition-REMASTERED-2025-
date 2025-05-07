@@ -18,12 +18,12 @@ body{
     flex-direction: row;
 }
 
-.left{
+#left{
     width: 25%;
     height: 100%;
 }
 
-.right{
+#right{
     width: 75%;
     height: 100%;
 }
@@ -242,4 +242,9 @@ dialog::backdrop {
     width: min-content;
     display: grid;
     grid-template-columns: 1fr 1fr;
+}
+
+.drop{
+    filter: brightness(60%);
+    border: 2px dashed cyan;
 }
