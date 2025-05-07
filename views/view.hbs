@@ -25,12 +25,17 @@
             <form action="/createfile" method="post" accept-charset="utf-8">
                 <input type="text" name="call" required>
                 <input type="hidden" name="context" value={{urlencode context}}>
+                <select name="extension">
+                    <option value="css">css</option>
+                    <option value="json">json</option>
+                    <option value="html">html</option>
+                </select>
                 <input type="submit" value="create file">
                 <button id="close-create-file-dialog-button">Cancel</button>
             </form>
         </div>
     </dialog>
-    <div class="left">
+    <div id="left">
         <div id="dialog-button-holder">
             <button id="create-folder-dialog-button">Create folder</button>
             <button id="create-file-dialog-button">Create file</button>
@@ -44,15 +49,26 @@
         </form>
     </div>
 
-    <div class="right">
+    <div id="right">
+        <dialog id="rename-dialog">
+            <div class="dialog-div">
+                <form action="/rename" method="post">
+                    <input type="hidden" name="previous" id="rename-previous-name">
+                    <input type="hidden" name="context" id="rename-context">
+                    <input type="text" name="new_name" id="rename-new-name">
+                    <input type="submit" value="rename">
+                    <button id="close-rename-dialog">Cancel</button>
+                </form>
+            </div>
+        </dialog>
         <div id="folders">
             {{#each folders}}
                 <div class="folder" id="{{urlencode name}}Folder">
                     <a href="/files{{urlencode ../context}}/{{urlencode name}}">
                         <span>[{{name}}]</span>
                     </a>
-                    <a class="rename" href="/rename{{urlencode ../context}}/{{urlencode name}}">&#9997;</a>
-                    <div class="download" onclick="downloadFolder('{{urlencode ../context}}', '{{urlencode name}}')">&#9735;</div>
+                    <div class="rename" onclick="rename('{{urlencode ../context}}', '{{urlencode name}}')">&#9997;</div>
+                    <a class="download" href="/downloadfolder{{urlencode ../context}}/{{urlencode name}}">&#9735;</a>
                     <div class="delete" onclick="deleteFolder('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
                     </div>
             {{/each}}
@@ -61,9 +77,9 @@
             {{#each files}}
                 <div class="file" id="{{urlencode name}}File">
                     <span>[{{name}}]</span>
-                    <a class="rename" href="/rename{{urlencode ../context}}/{{urlencode name}}">&#9997;</a>
+                    <div class="rename" onclick="rename('{{urlencode ../context}}', '{{urlencode name}}')">&#9997;</div>
                     <a class="download" href="/downloadfile{{urlencode ../context}}/{{urlencode name}}">&#9735;</a>
-                    <div class="delete" onclick="deleteFile('{{urlencode name}}', '{{urlencode ../context}}')">&cross;</div>
+                    <div class="delete" onclick="deleteFile('{{urlencode ../context}}', '{{urlencode name}}')">&cross;</div>
                 </div>
             {{/each}}
         </div>
@@ -77,12 +93,17 @@
     const createFileDialog = document.getElementById('create-file-dialog');
     const createFileDialogButton = document.getElementById('create-file-dialog-button');
     const closeCreateFileDialogButton = document.getElementById('close-create-file-dialog-button');
+    const renameDialog = document.getElementById('rename-dialog');
+    const closeRenameDialog = document.getElementById('close-rename-dialog');
+    const renamePreviousName = document.getElementById('rename-previous-name');
+    const renameContext = document.getElementById('rename-context');
+    const renameNewName = document.getElementById('rename-new-name');
 
     createFolderDialogButton.addEventListener('click', () => {
         createFolderDialog.showModal();
     });
 
-    closeCreateFolderDialogButton.addEventListener('click', e => {
+    closeCreateFolderDialogButton.addEventListener('click', () => {
         createFolderDialog.close()
     });
 
@@ -91,8 +112,19 @@
     });
 
     closeCreateFileDialogButton.addEventListener('click', () => {
-        createFileDialog.close()
+        createFileDialog.close();
     });
+
+    closeRenameDialog.addEventListener('click', ()=> {
+        renameDialog.close();
+    })
+
+    function rename(context, name){
+        renameContext.value = context;
+        renamePreviousName.value = name;
+        renameNewName.value = name;
+        renameDialog.showModal();
+    }
 
     function deleteFolder(name, context) {
         fetch('/deletefolder', {
@@ -105,28 +137,6 @@
         document.getElementById('folders').removeChild(document.getElementById(`${name}Folder`))
     }
 
-    function downloadFolder(name, context) {
-        fetch('/downloadfolder', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                name: name,
-                context: context
-            })
-        })
-    }
-
-    // function downloadFile(name, context) {
-    //     fetch('/downloadfile', {
-    //         method: 'POST',
-    //         headers: {'Content-Type': 'application/json'},
-    //         body: JSON.stringify({
-    //             name: name,
-    //             context: context
-    //         })
-    //     })
-    // }
-
     function deleteFile(context, name){
         fetch('/deletefile', {
             method: 'POST',
@@ -137,5 +147,57 @@
             })
         });
         document.getElementById('files').removeChild(document.getElementById(`${name}File`))
+    }
+
+    document.querySelector("html").ondragover = function (e) {
+        e.preventDefault(); // usuwa domyślne zachowanie strony po wykonaniu zdarzenia, warto zakomentować i sprawdzić
+        e.stopPropagation(); // zatrzymuje dalszą propagację zdarzenia, warto zakomentować i sprawdzić
+    }
+
+    const right = document.querySelector("#right");
+    right.ondragenter = function (e) {
+        right.classList.add('drop');
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    document.querySelector("#right").ondragover = function (e) {
+        right.classList.add('drop');
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    document.querySelector("#right").ondragleave = function (e) {
+        right.classList.remove('drop');
+        e.stopPropagation();
+        e.preventDefault();
+
+    }
+
+    document.querySelector("#right").ondrop = async function (e) {
+
+        right.classList.remove('drop');
+        e.stopPropagation();
+        e.preventDefault();
+
+        const files = e.dataTransfer.files;
+        console.log(files)
+        if (files.length === 0) return;
+
+        // teraz utwórz obiekt FormData zastępujący formularz
+        // oraz dodaj do niego po kolei wszystkie pliki z powyższej listy files
+        // na koniec użyj fetcha do uploadu plików
+
+        const fd = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            fd.append('upload', files[i]);
+        }
+
+        fd.append('context', '{{urlencode context}}')
+        await fetch('/uploadfile', {
+            method: 'POST',
+            body: fd
+        });
+        location.reload()
     }
 </script>
